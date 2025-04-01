@@ -96,8 +96,10 @@ class NewsAnalyzer():
                 num_retries += 1
         
         if is_completed:
-            return response
-                
+            keywords = response.split(', ')
+            
+            return str(keywords)
+   
         raise LLMRequestError(self._backbone_model, self._backbone_model_provider)
     
     def process(self, text):
@@ -124,8 +126,22 @@ class NewsAnalyzer():
                 num_retries += 1
         
         if is_completed:
-            return response
-                
+            mark1 = response.find('Summary')
+            mark2 = response.find('Category')
+            mark3 = response.find('Tags')
+            
+            summary = response[mark1 + 9:mark2 - 1].strip()
+            category = response[mark2 + 10:mark3 - 1].strip()
+            keywords_str = response[mark3 + 10:].strip()
+            
+            keywords = keywords_str.split(', ')
+            
+            return {
+                "summary": summary,
+                "category": category,
+                "keywords": keywords
+            }
+        
         raise LLMRequestError(self._backbone_model, self._backbone_model_provider)
 
 # ==

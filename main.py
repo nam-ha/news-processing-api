@@ -114,9 +114,9 @@ async def process(request_body: NewsContent) -> JSONResponse:
         output = analyzer.process(
             text = request_body.text
         )
-                
+        
         return JSONResponse(
-            content = json.loads(output)
+            content = output
         )
 
     except NewsAnalyzerException as nae:
