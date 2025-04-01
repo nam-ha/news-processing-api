@@ -73,7 +73,7 @@ class NewsAnalyzer():
         
         raise LLMRequestError(self._backbone_model, self._backbone_model_provider)
     
-    def extract_keywords(self, text):
+    def extract_keywords(self, text, max_num_keywords = 10):
         system_template = self._config['keywords_extraction']['system_template']
         prompt_template = ChatPromptTemplate.from_messages(
             [("system", system_template), ("user", "{text}")]
@@ -98,11 +98,11 @@ class NewsAnalyzer():
         if is_completed:
             keywords = response.split(', ')
             
-            return str(keywords)
+            return str(keywords[:max_num_keywords])
    
         raise LLMRequestError(self._backbone_model, self._backbone_model_provider)
     
-    def process(self, text):
+    def process(self, text, max_num_keywords = 10):
         system_template = self._config['processing']['system_template']
         prompt_template = ChatPromptTemplate.from_messages(
             [("system", system_template), ("user", "{text}")]
@@ -139,7 +139,7 @@ class NewsAnalyzer():
             return {
                 "summary": summary,
                 "category": category,
-                "keywords": keywords
+                "keywords": keywords[:max_num_keywords]
             }
         
         raise LLMRequestError(self._backbone_model, self._backbone_model_provider)
