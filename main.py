@@ -6,10 +6,10 @@ import json
 import uvicorn
 
 from pydantic import BaseModel
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from fastapi.responses import JSONResponse
 
-from source.core import NewsAnalyzer
+from source.core import NewsAnalyzer, NewsAnalyzerException
 
 # ==
 config_file = "configs/api.json"
@@ -41,43 +41,95 @@ class ExtractKeywordsResponse(BaseModel):
     
 @app.post("/summarize")
 async def summarize(request_body: NewsContent) -> SummarizeResponse:
-    summary = analyzer.summarize(
-        text = request_body.text
-    )
-             
-    return SummarizeResponse(
-        summary = summary
-    )
+    try:
+        summary = analyzer.summarize(
+            text = request_body.text
+        )
+                
+        return SummarizeResponse(
+            summary = summary
+        )
+        
+    except NewsAnalyzerException as nae:
+        raise HTTPException(
+            status_code = 500,
+            detail = f"Internal Server Error: {str(nae)}"
+        )
+        
+    except Exception as e:
+        raise HTTPException(
+            status_code = 500,
+            detail = f"Internal Server Error: {str(e)}"
+        )
 
 @app.post("/categorize")
 async def categorize(request_body: NewsContent) -> CategorizeResponse:
-    category = analyzer.categorize(
-        text = request_body.text
-    )
-             
-    return CategorizeResponse(
-        category = category
-    )
+    try:
+        category = analyzer.categorize(
+            text = request_body.text
+        )
+                
+        return CategorizeResponse(
+            category = category
+        )
+    
+    except NewsAnalyzerException as nae:
+        raise HTTPException(
+            status_code = 500,
+            detail = f"Internal Server Error: {str(nae)}"
+        )
+        
+    except Exception as e:
+        raise HTTPException(
+            status_code = 500,
+            detail = f"Internal Server Error: {str(e)}"
+        )
     
 @app.post("/extract_keywords")
 async def categorize(request_body: NewsContent) -> ExtractKeywordsResponse:
-    keywords = analyzer.extract_keywords(
-        text = request_body.text
-    )
-             
-    return ExtractKeywordsResponse(
-        keywords = keywords
-    )
+    try:
+        keywords = analyzer.extract_keywords(
+            text = request_body.text
+        )
+                
+        return ExtractKeywordsResponse(
+            keywords = keywords
+        )
+    
+    except NewsAnalyzerException as nae:
+        raise HTTPException(
+            status_code = 500,
+            detail = f"Internal Server Error: {str(nae)}"
+        )
+        
+    except Exception as e:
+        raise HTTPException(
+            status_code = 500,
+            detail = f"Internal Server Error: {str(e)}"
+        )
 
 @app.post("/process")
 async def process(request_body: NewsContent) -> JSONResponse:
-    output = analyzer.process(
-        text = request_body.text
-    )
-             
-    return JSONResponse(
-        content = json.loads(output)
-    )
+    try:
+        output = analyzer.process(
+            text = request_body.text
+        )
+                
+        return JSONResponse(
+            content = json.loads(output)
+        )
+
+    except NewsAnalyzerException as nae:
+        raise HTTPException(
+            status_code = 500,
+            detail = f"Internal Server Error: {str(nae)}"
+        )
+        
+    except Exception as e:
+        raise HTTPException(
+            status_code = 500,
+            detail = f"Internal Server Error: {str(e)}"
+        )
     
 # == 
 def main():

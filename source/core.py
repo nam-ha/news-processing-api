@@ -9,7 +9,10 @@ class NewsAnalyzer():
         self._config_file = "configs/core.json"
         with open(self._config_file, "r") as file:
             self._config = json.load(file)
-            
+        
+        self._backbone_model = backbone_model
+        self._backbone_model_provider = backbone_model_provider
+        
         self._llm = init_chat_model(
             model = backbone_model, 
             model_provider = backbone_model_provider
@@ -27,9 +30,20 @@ class NewsAnalyzer():
             }
         )
         
-        response = self._llm.invoke(prompt).content
+        is_completed = False
+        num_retries = 0
+        while not is_completed and num_retries <= 2:
+            try:
+                response = self._llm.invoke(prompt).content
+                is_completed = True
+                
+            except Exception:
+                num_retries += 1
         
-        return response
+        if is_completed:
+            return response
+        
+        raise LLMRequestError(self._backbone_model, self._backbone_model_provider)
 
     def categorize(self, text):
         system_template = self._config['categorization']['system_template']
@@ -44,9 +58,20 @@ class NewsAnalyzer():
             }
         )
         
-        response = self._llm.invoke(prompt).content
+        is_completed = False
+        num_retries = 0
+        while not is_completed and num_retries <= 2:
+            try:
+                response = self._llm.invoke(prompt).content
+                is_completed = True
+                
+            except Exception:
+                num_retries += 1
         
-        return response
+        if is_completed:
+            return response
+        
+        raise LLMRequestError(self._backbone_model, self._backbone_model_provider)
     
     def extract_keywords(self, text):
         system_template = self._config['keywords_extraction']['system_template']
@@ -59,17 +84,21 @@ class NewsAnalyzer():
                 "text": text
             }
         )
+                
+        is_completed = False
+        num_retries = 0
+        while not is_completed and num_retries <= 2:
+            try:
+                response = self._llm.invoke(prompt).content
+                is_completed = True
+                
+            except Exception:
+                num_retries += 1
         
-        response = self._llm.invoke(prompt).content
-        
-        try:
-            keywords = json.loads(response)
-            
-        except Exception as e:
-            #TODO: Handle retry
-            pass
-        
-        return response
+        if is_completed:
+            return response
+                
+        raise LLMRequestError(self._backbone_model, self._backbone_model_provider)
     
     def process(self, text):
         system_template = self._config['processing']['system_template']
@@ -87,3 +116,23 @@ class NewsAnalyzer():
         response = self._llm.invoke(prompt).content
                 
         return response
+
+# ==
+class NewsAnalyzerException(Exception):
+    def __init__(self, message = "NewsAnalyzerException"):
+        super().__init__(message)
+        self.message = message
+
+    def __str__(self):
+        return self.message
+
+class LLMRequestError(NewsAnalyzerException):
+    def __init__(self, model, model_provider):
+        self._model = model
+        self._model_provider = model_provider
+        
+        self.message = f"LLMRequestError: An error occurred when trying to request to {model} of {model_provider}"
+        super().__init__(self.message)
+
+    def __str__(self):
+        return self.message
