@@ -17,7 +17,7 @@ python main.py
 
 ## **Deploy**
 ```sh
-docker build -t news-processing-api .
+docker build -f deploy/Dockerfile -t news-processing-api .
 docker run -p <Forwarded Port>:<API Deployment Port> news-processing-api
 ```
 
