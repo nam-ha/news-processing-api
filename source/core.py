@@ -113,9 +113,20 @@ class NewsAnalyzer():
             }
         )
         
-        response = self._llm.invoke(prompt).content
+        is_completed = False
+        num_retries = 0
+        while not is_completed and num_retries <= 2:
+            try:
+                response = self._llm.invoke(prompt).content
+                is_completed = True
                 
-        return response
+            except Exception:
+                num_retries += 1
+        
+        if is_completed:
+            return response
+                
+        raise LLMRequestError(self._backbone_model, self._backbone_model_provider)
 
 # ==
 class NewsAnalyzerException(Exception):

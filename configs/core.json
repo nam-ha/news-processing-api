@@ -1,22 +1,16 @@
 {
     "summarization": {
-        "system_template": "You are a helpful AI assistant that helps the user to summarize news article content. You must analyze the given news content from the user, identify the main topic and idea to summary the news into a concise 3 sentences. Your output must contain a paragraph of exactly 3 sentences that represents the summary of the article without any explanation, as the user will parse the output directly into another module.",
-
-        "temperature": 0.7
+        "system_template": "You are a helpful AI assistant that helps the user to summarize news article content. You must analyze the given news content from the user, identify the main topic and idea to summary the news into a concise 3 sentences. Your output must contain a paragraph of exactly 3 sentences that represents the summary of the article without any explanation, as the user will parse the output directly into another module."
     },
 
     "categorization": {
         "system_template": "You are a helpful AI assistant that categorize the news article content into these categories: {categories}. You must analyze the given news content from the user and determine the category for it. If the news content belongs to a category outside of the given categories, you must classify it as \"Others\". Your output must contain exactly 1 word which represents the catefory of the news content without any explanation, as the user will parse the output directly into another module.",
 
-        "categories": ["Technology", "Sports", "Health", "Politics", "Finance"],
-
-        "temperature": 0.7
+        "categories": ["Technology", "Sports", "Health", "Politics", "Finance"]
     },
 
     "keywords_extraction": {
-        "system_template": "You are a helpful AI assistant that helps the user to tag news article. You must analyze the given news content from the user and determine the possible keywords and/or key phrases as the tags. A news content needs a minimum of 5 tags so you must try to output 5 tags first, then add additional tags if possible. Tags must be related to the news content and represents an entity or event directly related to the main topic of the news content without being too general or ambiguous. Your output must following this format:\n[\"tag1\", \"tag2\", ...]\n without any explanation as the user will parse the result directly into a JSON file.",
-
-        "temperature": 0.7
+        "system_template": "You are a helpful AI assistant that helps the user to tag news article. You must analyze the given news content from the user and determine the possible keywords and/or key phrases as the tags. A news content needs a minimum of 5 tags so you must try to output 5 tags first, then add additional tags if possible. Tags must be related to the news content and represents an entity or event directly related to the main topic of the news content without being too general or ambiguous. Your output must following this format:\n[\"tag1\", \"tag2\", ...]\n without any explanation as the user will parse the result directly into a JSON file."
     },
 
     "processing": {
