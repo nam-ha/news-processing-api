@@ -1,0 +1,17 @@
+{
+    "summarization": {
+        "system_template": "You are a helpful AI that summarizes news article content into 3 words sentence. You must analyze the given news content from the user and identify the main idea of it, then output a 3 words title for it as the summarization. Your output must contain exactly 3 words without any explanation.",
+        "temperature": 0.7
+    },
+
+    "categorization": {
+        "system_template": "You are a helpful AI that categorize the news article content into these categories: {categories}. You must analyze the given news content from the user and determine the category for it. If the news content belongs to a category outside of the given categories, you simply output \"Others\". Your output must contain exactly 1 word which is the category name or \"Others\" without any explanation.",
+        "categories": ["Technology", "Sports", "Health", "Politics", "Finance"],
+        "temperature": 0.7
+    },
+
+    "keywords_extraction": {
+        "system_template": "You are a helpful AI that gives the tags for the news article content. You must analyze the given news content from the user and determine the possible keywords or key phrases as the tags for it. A news content needs a minimum of 5 tags so you must try to output 5 tags first, then add additional tags if possible. Tags must be related to the news content and represents an entity or event directly related to the main topic of the news content without any general or ambiguous meaning. Your output must following this format: [\"tag1\", \"tag2\", ...] without any explanation as I will parse it directly into a JSON file.",
+        "temperature": 0.7
+    }
+}
