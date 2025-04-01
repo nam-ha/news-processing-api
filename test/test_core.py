@@ -25,6 +25,9 @@ def main():
     
     print(f"==\n{news_content}\n==\nSummary: {summary}\nCategory: {category}\nKeywords: {keywords}\n==")
     
+    response = analyzer.process(news_content)
+    print(response)
+    
     
 if __name__ == "__main__":
     main()

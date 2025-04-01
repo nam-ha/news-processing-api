@@ -7,6 +7,7 @@ import uvicorn
 
 from pydantic import BaseModel
 from fastapi import FastAPI
+from fastapi.responses import JSONResponse
 
 from source.core import NewsAnalyzer
 
@@ -37,7 +38,7 @@ class CategorizeResponse(BaseModel):
     
 class ExtractKeywordsResponse(BaseModel):
     keywords: str
-     
+    
 @app.post("/summarize")
 async def summarize(request_body: NewsContent) -> SummarizeResponse:
     summary = analyzer.summarize(
@@ -68,7 +69,16 @@ async def categorize(request_body: NewsContent) -> ExtractKeywordsResponse:
         keywords = keywords
     )
 
-
+@app.post("/process")
+async def process(request_body: NewsContent) -> JSONResponse:
+    output = analyzer.process(
+        text = request_body.text
+    )
+             
+    return JSONResponse(
+        content = json.loads(output)
+    )
+    
 # == 
 def main():
     uvicorn.run(

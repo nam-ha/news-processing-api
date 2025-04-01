@@ -72,4 +72,18 @@ class NewsAnalyzer():
         return response
     
     def process(self, text):
-        pass
+        system_template = self._config['processing']['system_template']
+        prompt_template = ChatPromptTemplate.from_messages(
+            [("system", system_template), ("user", "{text}")]
+        )
+        
+        prompt = prompt_template.invoke(
+            {
+                "categories": self._config['processing']['categories'],
+                "text": text
+            }
+        )
+        
+        response = self._llm.invoke(prompt).content
+                
+        return response
