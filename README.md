@@ -61,7 +61,7 @@ Your output must contain a paragraph of exactly 3 sentences that represents the 
 This part is to encourage the AI to output only the result we need (3-sentence summarization)
 
 
-All other system prompts is following the same strategy. For the Process task, I make a seperate system prompt instead of running 3 invocations for the subtasks, it will reduce the cost needed and since the AI is doing 3 subtasks that has a dependent relationship, it can receive more context and can help increase the quality of the output. 
+All other system prompts follow the same strategy. For the Process task, I created a separate system prompt instead of running three separate invocations for the subtasks. This approach reduces the cost and, since the AI is handling three interdependent subtasks, it can receive more context, which helps improve the quality of the output.
 
 ---
 
