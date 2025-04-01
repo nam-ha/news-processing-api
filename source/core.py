@@ -4,7 +4,7 @@ from langchain_core.prompts import ChatPromptTemplate
 from langchain.chat_models import init_chat_model
 
 # ==
-class NewsAnalysis():
+class NewsAnalyzer():
     def __init__(self, backbone_model, backbone_model_provider):
         self._config_file = "configs/core.json"
         with open(self._config_file, "r") as file:
@@ -63,7 +63,7 @@ class NewsAnalysis():
         response = self._llm.invoke(prompt).content
         
         try:
-            response = json.loads(response)
+            keywords = json.loads(response)
             
         except Exception as e:
             #TODO: Handle retry

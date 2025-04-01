@@ -7,11 +7,11 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-from source.core import NewsAnalysis
+from source.core import NewsAnalyzer
 
 # ==
 def main():
-    analyzer = NewsAnalysis(
+    analyzer = NewsAnalyzer(
         backbone_model = "gpt-4o-mini",
         backbone_model_provider = "openai"
     )

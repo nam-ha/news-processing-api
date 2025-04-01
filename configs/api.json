@@ -1,0 +1,4 @@
+{
+    "backbone_model": "gpt-4o-mini",
+    "backbone_model_provider": "openai"
+}
