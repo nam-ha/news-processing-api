@@ -105,9 +105,9 @@ class NewsAnalyzer():
                 "min_num_keywords": self._config['keywords_extraction']['min_num_keywords'],
             }
         )
-        breakpoint()
+
         response = self._request_llm(prompt)
-        breakpoint()
+
         keywords = format_keywords_str(response, self._config['keywords_extraction']['max_num_keywords'])
         
         return keywords
@@ -129,7 +129,7 @@ class NewsAnalyzer():
         )
         
         response = self._request_llm(prompt)
-        breakpoint()
+
         summary, category, keywords = format_process_output(response, self._config['processing']['max_num_keywords'])
         
         return {
