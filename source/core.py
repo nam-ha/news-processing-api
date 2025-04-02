@@ -4,6 +4,27 @@ from langchain_core.prompts import ChatPromptTemplate
 from langchain.chat_models import init_chat_model
 
 # ==
+def format_keywords_str(keywords_str, max_num_keywords):
+    keywords = keywords_str.split(', ')
+    
+    list_formatted_keywords_str = str(keywords[:max_num_keywords])
+        
+    return list_formatted_keywords_str
+
+def format_process_output(process_output, max_num_keywords):
+    mark1 = process_output.find('Summary')
+    mark2 = process_output.find('Category')
+    mark3 = process_output.find('Tags')
+    
+    summary = process_output[mark1 + 9:mark2 - 1].strip()
+    category = process_output[mark2 + 10:mark3 - 1].strip()
+    keywords_str = process_output[mark3 + 10:].strip()
+    
+    keywords = format_keywords_str(keywords_str, max_num_keywords)
+    
+    return summary, category, keywords
+
+# ==
 class NewsAnalyzer():
     def __init__(self, backbone_model, backbone_model_provider):
         self._config_file = "configs/core.json"
@@ -17,7 +38,24 @@ class NewsAnalyzer():
             model = backbone_model, 
             model_provider = backbone_model_provider
         )
+    
+    def _request_llm(self, prompt, max_num_retries = 2):
+        is_completed = False
+        num_retries = 0
+        while not is_completed and num_retries <= max_num_retries:
+            try:
+                response = self._llm.invoke(prompt).content
+                is_completed = True
+                
+            except Exception as e:
+                num_retries += 1
+                print(f"An error happened when trying to request to the provider: {e}. Retrying ... ({num_retries}/{max_num_retries})")
+                
+        if is_completed:
+            return response
         
+        raise LLMRequestError(self._backbone_model, self._backbone_model_provider)
+    
     def summarize(self, text):            
         system_template = self._config['summarization']['system_template']
         prompt_template = ChatPromptTemplate.from_messages(
@@ -26,24 +64,15 @@ class NewsAnalyzer():
         
         prompt = prompt_template.invoke(
             {
-                "text": text
+                "text": text,
+                
+                "num_summary_sentences": self._config['summarization']['num_summary_sentences']
             }
         )
         
-        is_completed = False
-        num_retries = 0
-        while not is_completed and num_retries <= 2:
-            try:
-                response = self._llm.invoke(prompt).content
-                is_completed = True
-                
-            except Exception:
-                num_retries += 1
+        response = self._request_llm(prompt)
         
-        if is_completed:
-            return response
-        
-        raise LLMRequestError(self._backbone_model, self._backbone_model_provider)
+        return response
 
     def categorize(self, text):
         system_template = self._config['categorization']['system_template']
@@ -53,27 +82,17 @@ class NewsAnalyzer():
         
         prompt = prompt_template.invoke(
             {
-                "categories": self._config['categorization']['categories'],
-                "text": text
+                "text": text,
+                
+                "categories": self._config['categorization']['categories']
             }
         )
         
-        is_completed = False
-        num_retries = 0
-        while not is_completed and num_retries <= 2:
-            try:
-                response = self._llm.invoke(prompt).content
-                is_completed = True
-                
-            except Exception:
-                num_retries += 1
+        response = self._request_llm(prompt)
         
-        if is_completed:
-            return response
-        
-        raise LLMRequestError(self._backbone_model, self._backbone_model_provider)
+        return response
     
-    def extract_keywords(self, text, max_num_keywords = 10):
+    def extract_keywords(self, text):
         system_template = self._config['keywords_extraction']['system_template']
         prompt_template = ChatPromptTemplate.from_messages(
             [("system", system_template), ("user", "{text}")]
@@ -81,28 +100,19 @@ class NewsAnalyzer():
         
         prompt = prompt_template.invoke(
             {
-                "text": text
+                "text": text,
+                
+                "min_num_keywords": self._config['keywords_extraction']['min_num_keywords'],
             }
         )
-                
-        is_completed = False
-        num_retries = 0
-        while not is_completed and num_retries <= 2:
-            try:
-                response = self._llm.invoke(prompt).content
-                is_completed = True
-                
-            except Exception:
-                num_retries += 1
+        breakpoint()
+        response = self._request_llm(prompt)
+        breakpoint()
+        keywords = format_keywords_str(response, self._config['keywords_extraction']['max_num_keywords'])
         
-        if is_completed:
-            keywords = response.split(', ')
-            
-            return str(keywords[:max_num_keywords])
-   
-        raise LLMRequestError(self._backbone_model, self._backbone_model_provider)
+        return keywords
     
-    def process(self, text, max_num_keywords = 10):
+    def process(self, text):
         system_template = self._config['processing']['system_template']
         prompt_template = ChatPromptTemplate.from_messages(
             [("system", system_template), ("user", "{text}")]
@@ -110,39 +120,23 @@ class NewsAnalyzer():
         
         prompt = prompt_template.invoke(
             {
+                "text": text,
+                
+                "num_summary_sentences": self._config['processing']['num_summary_sentences'],
                 "categories": self._config['processing']['categories'],
-                "text": text
+                "min_num_keywords": self._config['processing']['min_num_keywords'],
             }
         )
         
-        is_completed = False
-        num_retries = 0
-        while not is_completed and num_retries <= 2:
-            try:
-                response = self._llm.invoke(prompt).content
-                is_completed = True
-                
-            except Exception:
-                num_retries += 1
+        response = self._request_llm(prompt)
+        breakpoint()
+        summary, category, keywords = format_process_output(response, self._config['processing']['max_num_keywords'])
         
-        if is_completed:
-            mark1 = response.find('Summary')
-            mark2 = response.find('Category')
-            mark3 = response.find('Tags')
-            
-            summary = response[mark1 + 9:mark2 - 1].strip()
-            category = response[mark2 + 10:mark3 - 1].strip()
-            keywords_str = response[mark3 + 10:].strip()
-            
-            keywords = keywords_str.split(', ')
-            
-            return {
-                "summary": summary,
-                "category": category,
-                "keywords": keywords[:max_num_keywords]
-            }
-        
-        raise LLMRequestError(self._backbone_model, self._backbone_model_provider)
+        return {
+            "summary": summary,
+            "category": category,
+            "keywords": keywords
+        }
 
 # ==
 class NewsAnalyzerException(Exception):
